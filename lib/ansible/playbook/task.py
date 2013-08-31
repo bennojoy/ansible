@@ -29,7 +29,7 @@ class Task(object):
         'delegate_to', 'first_available_file', 'ignore_errors',
         'local_action', 'transport', 'sudo', 'sudo_user', 'sudo_pass',
         'items_lookup_plugin', 'items_lookup_terms', 'environment', 'args',
-        'any_errors_fatal', 'changed_when', 'always_run'
+        'any_errors_fatal', 'changed_when', 'always_run', 'delay', 'retries', 'until'
     ]
 
     # to prevent typos and such
@@ -38,7 +38,7 @@ class Task(object):
          'first_available_file', 'include', 'tags', 'register', 'ignore_errors',
          'delegate_to', 'local_action', 'transport', 'sudo', 'sudo_user',
          'sudo_pass', 'when', 'connection', 'environment', 'args',
-         'any_errors_fatal', 'changed_when', 'always_run'
+         'any_errors_fatal', 'changed_when', 'always_run', 'delay', 'retries', 'until'
     ]
 
     def __init__(self, play, ds, module_vars=None, additional_conditions=None):
@@ -53,7 +53,6 @@ class Task(object):
             return
         else:
             self.meta = None
-
 
         library = os.path.join(play.basedir, 'library')
         if os.path.exists(library):
@@ -110,6 +109,16 @@ class Task(object):
         self.register     = ds.get('register', None)
         self.sudo         = utils.boolean(ds.get('sudo', play.sudo))
         self.environment  = ds.get('environment', {})
+
+        #Code to allow do until feature in a Task 
+        if 'until' in ds:
+            if not ds.get('register'):
+                raise errors.AnsibleError("register keyword is mandatory when using do until feature")
+            self.module_vars['delay']     = ds.get('delay', 5)
+            self.module_vars['retries']   = ds.get('retries', 3)
+            self.module_vars['register']  = ds.get('register', None)
+            self.until                    = "jinja2_compare %s" % (ds.get('until'))
+            self.module_vars['until']     = utils.compile_when_to_only_if(self.until)
 
         # rather than simple key=value args on the options line, these represent structured data and the values
         # can be hashes and lists, not just scalars
