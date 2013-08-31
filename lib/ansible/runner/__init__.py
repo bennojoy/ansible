@@ -640,7 +640,7 @@ class Runner(object):
         if until is not None and result.comm_ok:
             inject[self.module_vars.get('register')] = result.result
             cond = template.template(self.basedir, until, inject, expand_lists=False)
-            if not utils.check_conditional(cond):
+            if not utils.check_conditional(cond, self.basedir, inject, fail_on_undefined=self.error_on_undefined_vars):
                 retries = self.module_vars.get('retries')
                 delay   = self.module_vars.get('delay')
                 for x in range(0, retries):
@@ -654,10 +654,10 @@ class Runner(object):
                         break;
                     inject[self.module_vars.get('register')] = result.result
                     cond = template.template(self.basedir, until, inject, expand_lists=False)
-                    if utils.check_conditional(cond):
+                    if utils.check_conditional(cond, self.basedir, inject, fail_on_undefined=self.error_on_undefined_vars):
                         until_result = 1
                         break;
-            if utils.check_conditional(cond):
+            if utils.check_conditional(cond, self.basedir, inject, fail_on_undefined=self.error_on_undefined_vars):
                 until_result = 1
             result.result['until_result'] = until_result
              
