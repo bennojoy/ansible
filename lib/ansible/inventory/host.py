@@ -80,6 +80,7 @@ class Host:
 
         if port and port != C.DEFAULT_REMOTE_PORT:
             self.port = int(port)
+            self.set_variable('ansible_ssh_port', int(port))
         else:
             self.port = C.DEFAULT_REMOTE_PORT
 
