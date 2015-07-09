@@ -208,6 +208,10 @@ class TaskExecutor:
             variables = self._job_vars
 
         templar = Templar(loader=self._loader, shared_loader_obj=self._shared_loader_obj, variables=variables)
+        
+        # get the connection and the handler for this execution
+        self._connection = self._get_connection(variables)
+        self._connection.set_host_overrides(host=self._host)
 
         # fields set from the play/task may be based on variables, so we have to
         # do the same kind of post validation step on it here before we use it.
@@ -217,9 +221,6 @@ class TaskExecutor:
         # variables to the variable dictionary
         self._connection_info.update_vars(variables)
 
-        # get the connection and the handler for this execution
-        self._connection = self._get_connection(variables)
-        self._connection.set_host_overrides(host=self._host)
 
         self._handler = self._get_action_handler(connection=self._connection, templar=templar)
 
